@@ -8,6 +8,8 @@ const corsHeaders = {
 
 const DAILY_LIMIT_LOGGED_IN = 750;
 const DAILY_LIMIT_ANONYMOUS = 500;
+const DAILY_LIMIT_ADMIN = 999999;
+const ADMIN_EMAILS = ['admin@aitextverifier.com'];
 
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
@@ -47,6 +49,10 @@ serve(async (req) => {
         const { action, tool, wordCount } = await req.json();
         const today = new Date().toISOString().split('T')[0]; // UTC date YYYY-MM-DD
 
+        // Determine the daily limit for this user
+        const isUserAdmin = user.email && ADMIN_EMAILS.includes(user.email);
+        const userDailyLimit = isUserAdmin ? DAILY_LIMIT_ADMIN : DAILY_LIMIT_LOGGED_IN;
+
         if (action === 'check') {
             // Return current usage for all tools today
             const { data: usageRows, error: fetchError } = await supabaseAdmin
@@ -62,24 +68,24 @@ serve(async (req) => {
 
             // Build remaining credits map
             const remaining: Record<string, number> = {
-                'ai-detector': DAILY_LIMIT_LOGGED_IN,
-                'grammar-checker': DAILY_LIMIT_LOGGED_IN,
-                'paraphrasing': DAILY_LIMIT_LOGGED_IN,
-                'summarization': DAILY_LIMIT_LOGGED_IN,
-                'ai-summary': DAILY_LIMIT_LOGGED_IN,
-                'translation': DAILY_LIMIT_LOGGED_IN,
+                'ai-detector': userDailyLimit,
+                'grammar-checker': userDailyLimit,
+                'paraphrasing': userDailyLimit,
+                'summarization': userDailyLimit,
+                'ai-summary': userDailyLimit,
+                'translation': userDailyLimit,
             };
 
             if (usageRows) {
                 for (const row of usageRows) {
                     if (row.tool in remaining) {
-                        remaining[row.tool] = Math.max(0, DAILY_LIMIT_LOGGED_IN - row.words_used);
+                        remaining[row.tool] = Math.max(0, userDailyLimit - row.words_used);
                     }
                 }
             }
 
             return new Response(
-                JSON.stringify({ success: true, remaining, dailyLimit: DAILY_LIMIT_LOGGED_IN }),
+                JSON.stringify({ success: true, remaining, dailyLimit: userDailyLimit }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
@@ -107,7 +113,7 @@ serve(async (req) => {
             }
 
             const currentUsed = existing?.words_used || 0;
-            const remaining = DAILY_LIMIT_LOGGED_IN - currentUsed;
+            const remaining = userDailyLimit - currentUsed;
 
             if (wordCount > remaining) {
                 return new Response(
@@ -115,7 +121,7 @@ serve(async (req) => {
                         success: false,
                         error: 'Daily limit exceeded',
                         remaining,
-                        dailyLimit: DAILY_LIMIT_LOGGED_IN,
+                        dailyLimit: userDailyLimit,
                     }),
                     { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                 );
@@ -155,7 +161,7 @@ serve(async (req) => {
                 JSON.stringify({
                     success: true,
                     remaining: remaining - wordCount,
-                    dailyLimit: DAILY_LIMIT_LOGGED_IN,
+                    dailyLimit: userDailyLimit,
                 }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
