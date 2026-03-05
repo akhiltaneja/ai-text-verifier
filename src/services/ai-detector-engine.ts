@@ -156,7 +156,8 @@ function splitIntoSentences(text: string): string[] {
 }
 
 function splitIntoWords(text: string): string[] {
-    return (text.toLowerCase().match(/\b[a-z']+\b/g) || []);
+    // Keep numbers and alphabets to properly catch list numbering
+    return (text.toLowerCase().match(/\b[a-z0-9']+\b/g) || []);
 }
 
 function mean(arr: number[]): number {
@@ -334,14 +335,22 @@ function analyzeSentenceStructure(sentences: string[]): number {
     // Check sentence opening diversity
     const openings = sentences.map(s => {
         const words = splitIntoWords(s);
-        return words.slice(0, 2).join(' ');
+        return words.slice(0, 1).join(' '); // Reduced to 1 word for list checking
     });
     const uniqueOpenings = new Set(openings);
     const openingDiversity = uniqueOpenings.size / openings.length;
 
-    // AI tends to use diverse openings (it's trained to avoid repetition)
-    // Paradoxically, very high opening diversity can signal AI
-    if (openingDiversity > 0.9) score += 15;
+    // AI loves bulleted lists and repeated sentence structures (The... The... The...)
+    if (openingDiversity < 0.3) score += 35; // Highly repetitive starts
+    else if (openingDiversity < 0.5) score += 20;
+    else if (openingDiversity > 0.9 && sentences.length > 8) score += 15; // Unnaturally diverse
+
+    // Look for list-like structure (many short lines ending abruptly without punctuation)
+    const shortPhraseCount = lengths.filter(l => l > 0 && l <= 8).length;
+    if (shortPhraseCount > sentences.length * 0.3 && sentences.length > 5) {
+        // High density of short phrases (like bullet points) is very common in AI
+        score += 30;
+    }
 
     return Math.min(100, score);
 }
@@ -512,16 +521,16 @@ function analyzeReadabilityConsistency(sentences: string[]): number {
     if (!hasOutliers && sentences.length > 5) score += 20;
 
     // Check paragraph consistency (window-based)
-    if (sentences.length >= 6) {
-        const windowSize = 3;
+    if (sentences.length >= 4) {
+        const windowSize = Math.min(3, sentences.length - 1);
         const windowAvgs: number[] = [];
         for (let i = 0; i <= readabilityScores.length - windowSize; i++) {
             const window = readabilityScores.slice(i, i + windowSize);
             windowAvgs.push(mean(window));
         }
         const windowCV = coefficientOfVariation(windowAvgs);
-        if (windowCV < 0.08) score += 15;
-        else if (windowCV < 0.12) score += 8;
+        if (windowCV < 0.1) score += 30; // Highly consistent windows (like lists)
+        else if (windowCV < 0.2) score += 15;
     }
 
     return Math.min(100, score);
@@ -727,20 +736,23 @@ export function detectAIContent(text: string): EngineResult {
         readabilityScore * ALGORITHM_WEIGHTS.readabilityConsistency
     );
 
-    // Per-sentence analysis
-    const sentenceAnalyses = sentences.map(s => analyzeSentence(s, sentences));
+    // Add an adjustment for list-heavy text (if vocabulary and structure look like AI but burstiness failed because of lists)
+    let finalScore = overallScore;
+    if (structureScore > 70 && vocabularyScore > 60) {
+        finalScore = Math.min(100, finalScore + 15);
+    }
+    // Also catch highly standard AI formats (if 4/6 tools agree strongly)
+    const strongHits = Object.values({
+        entropyScore, vocabularyScore, structureScore, burstyScore, formulaicScore, readabilityScore
+    }).filter(s => s > 65).length;
 
-    // Collect highlighted (AI-detected) sentences
-    const highlightedSentences = sentenceAnalyses
-        .filter(s => s.aiProbability > 55)
-        .map(s => s.text);
-
-    // Generate improved version
-    const improvedVersion = generateImprovedVersion(text, sentenceAnalyses);
+    if (strongHits >= 4) {
+        finalScore = Math.max(85, finalScore);
+    }
 
     return {
         sentences: sentenceAnalyses,
-        overallScore: Math.min(100, Math.max(0, overallScore)),
+        overallScore: Math.min(100, Math.max(0, finalScore)),
         detectionMethods: {
             entropyAnalysis: entropyScore,
             vocabularyDiversity: vocabularyScore,
