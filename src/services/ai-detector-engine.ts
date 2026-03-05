@@ -229,10 +229,10 @@ function analyzeEntropy(text: string, sentences: string[]): number {
     let score = 0;
 
     // Low entropy variation = likely AI
-    if (entropyCV < 0.1) score += 40;
-    else if (entropyCV < 0.2) score += 30;
-    else if (entropyCV < 0.3) score += 15;
-    else if (entropyCV < 0.4) score += 5;
+    if (entropyCV < 0.15) score += 40;
+    else if (entropyCV < 0.25) score += 30;
+    else if (entropyCV < 0.35) score += 15;
+    else if (entropyCV < 0.45) score += 5;
 
     // Moderate overall char entropy (4.0-4.5) is typical of AI
     if (charEntropy >= 3.8 && charEntropy <= 4.6) score += 30;
@@ -317,14 +317,14 @@ function analyzeSentenceStructure(sentences: string[]): number {
     let score = 0;
 
     // Low CV = uniform sentence length = likely AI
-    if (cv < 0.2) score += 40;
-    else if (cv < 0.3) score += 30;
-    else if (cv < 0.4) score += 20;
-    else if (cv < 0.5) score += 10;
+    if (cv < 0.3) score += 45;
+    else if (cv < 0.4) score += 35;
+    else if (cv < 0.5) score += 20;
+    else if (cv < 0.6) score += 10;
 
     // AI prefers medium-length sentences (15-25 words)
-    if (avgLength >= 14 && avgLength <= 26) score += 20;
-    else if (avgLength >= 10 && avgLength <= 30) score += 10;
+    if (avgLength >= 14 && avgLength <= 28) score += 25;
+    else if (avgLength >= 10 && avgLength <= 32) score += 15;
 
     // Check for no very short or very long sentences (AI avoids extremes)
     const hasVeryShort = lengths.some(l => l <= 4);
@@ -377,11 +377,11 @@ function analyzeBurstiness(sentences: string[]): number {
     let score = 0;
 
     // Low burstiness (low CV) = AI
-    if (cv < 0.15) score += 45;
-    else if (cv < 0.25) score += 35;
-    else if (cv < 0.35) score += 25;
-    else if (cv < 0.45) score += 15;
-    else if (cv < 0.55) score += 5;
+    if (cv < 0.25) score += 50;
+    else if (cv < 0.35) score += 40;
+    else if (cv < 0.45) score += 30;
+    else if (cv < 0.55) score += 15;
+    else if (cv < 0.65) score += 5;
 
     // Check for uniformity in sentence-to-sentence complexity changes
     const diffs: number[] = [];
@@ -495,11 +495,11 @@ function analyzeReadabilityConsistency(sentences: string[]): number {
     let score = 0;
 
     // Very consistent readability = likely AI
-    if (cv < 0.1) score += 45;
-    else if (cv < 0.15) score += 35;
-    else if (cv < 0.2) score += 25;
-    else if (cv < 0.3) score += 15;
-    else if (cv < 0.4) score += 8;
+    if (cv < 0.2) score += 50;
+    else if (cv < 0.25) score += 40;
+    else if (cv < 0.3) score += 30;
+    else if (cv < 0.4) score += 20;
+    else if (cv < 0.5) score += 10;
 
     // AI tends to keep readability in a medium range
     const avgReadability = mean(readabilityScores);
@@ -589,7 +589,7 @@ function analyzeSentence(sentence: string, allSentences: string[]): SentenceAnal
     const allLengths = allSentences.map(s => splitIntoWords(s).length);
     const avgSentenceLen = mean(allLengths);
     const deviation = Math.abs(words.length - avgSentenceLen) / Math.max(1, avgSentenceLen);
-    const burstyScore = deviation < 0.15 ? 65 : deviation < 0.3 ? 40 : 20;
+    const burstyScore = deviation < 0.25 ? 75 : deviation < 0.4 ? 50 : 20;
 
     // Weighted combination
     const aiProbability = Math.min(100, Math.round(
