@@ -20,9 +20,11 @@ const CreditContext = createContext<CreditContextType>({
   login: async () => false,
   signup: async () => false,
   logout: async () => false,
-  resetDailyCredits: () => {},
+  resetDailyCredits: () => { },
+  refreshCredits: () => { },
   credits: 0,
-  setUser: () => {}
+  dailyLimit: 500,
+  setUser: () => { }
 });
 
 export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,19 +32,21 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [user, setUser] = useState<User | null>(null);
   const [initialCheckDone, setInitialCheckDone] = useState<boolean>(false);
   const [totalCredits, setTotalCredits] = useState<number>(0);
-  
-  const { 
-    login: supabaseLogin, 
-    signup: supabaseSignup, 
+
+  const {
+    login: supabaseLogin,
+    signup: supabaseSignup,
     logout: supabaseLogout,
     extractUserFromSession,
     supabase
   } = useSupabaseAuth();
-  
-  const { 
-    availableCredits, 
-    useCredits: useCreditsManager, 
-    resetDailyCredits 
+
+  const {
+    availableCredits,
+    useCredits: useCreditsManager,
+    resetDailyCredits,
+    refreshCredits,
+    dailyLimit,
   } = useCreditManager(isLoggedIn);
 
   // Calculate total credits whenever availableCredits changes
@@ -55,7 +59,7 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
           const userData = extractUserFromSession(session);
           if (userData) {
@@ -69,9 +73,9 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setInitialCheckDone(true);
       }
     };
-    
+
     checkAuth();
-    
+
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -87,15 +91,16 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       }
     );
-    
+
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
+  // Refresh credits when login state changes or when initial check is done
   useEffect(() => {
     if (initialCheckDone) {
-      resetDailyCredits();
+      refreshCredits();
     }
   }, [isLoggedIn, initialCheckDone]);
 
@@ -103,12 +108,12 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const success = await supabaseLogin(email, password);
     return success;
   };
-  
+
   const signup = async (email: string, name: string, password: string): Promise<boolean> => {
     const success = await supabaseSignup(email, name, password);
     return success;
   };
-  
+
   const logout = async () => {
     const success = await supabaseLogout();
     if (success) {
@@ -127,7 +132,7 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setUser(userData);
   };
 
-  const contextValue = {
+  const contextValue: CreditContextType = {
     availableCredits,
     useCredits,
     isLoggedIn,
@@ -136,13 +141,15 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     signup,
     logout,
     resetDailyCredits,
+    refreshCredits,
     credits: totalCredits,
+    dailyLimit,
     setUser: updateUser
   };
 
   // Don't render children until initial auth check is complete
   if (!initialCheckDone) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return (

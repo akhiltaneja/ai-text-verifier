@@ -1,6 +1,14 @@
 
 // Default credit values
-export const DEFAULT_CREDITS_WITHOUT_LOGIN = 500;
-export const DEFAULT_CREDITS_WITH_LOGIN = 750;
-export const PARAPHRASING_CREDITS = 2000;
-export const SUMMARIZATION_CREDITS = Infinity; // Set to Infinity for unlimited use
+export const DAILY_LIMIT_ANONYMOUS = 500;
+export const DAILY_LIMIT_LOGGED_IN = 750;
+
+// All tool types
+export const ALL_TOOLS = [
+    'ai-detector',
+    'grammar-checker',
+    'paraphrasing',
+    'summarization',
+    'ai-summary',
+    'translation',
+] as const;

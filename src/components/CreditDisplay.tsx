@@ -11,14 +11,9 @@ interface CreditDisplayProps {
 }
 
 export const CreditDisplay: React.FC<CreditDisplayProps> = ({ tool }) => {
-  const { availableCredits, isLoggedIn } = useCredits();
-  
-  // Get max credits based on login status
-  const getMaxCredits = () => {
-    return isLoggedIn ? 750 : 500;
-  };
-  
-  const maxCredits = getMaxCredits();
+  const { availableCredits, isLoggedIn, dailyLimit } = useCredits();
+
+  const maxCredits = dailyLimit;
   const percentage = Math.max(0, Math.min(100, (availableCredits[tool] / maxCredits) * 100));
 
   return (
@@ -32,7 +27,8 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({ tool }) => {
         </div>
         <Progress value={percentage} className="h-2" />
         <p className="text-xs text-muted-foreground mt-1">
-          {isLoggedIn ? '750' : '500'} credits per day (1 credit = 1 word)
+          {maxCredits} credits per day (1 credit = 1 word)
+          {!isLoggedIn && ' • Sign up for 750/day'}
         </p>
       </div>
       <Link to="/pricing">

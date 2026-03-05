@@ -25,6 +25,8 @@ export interface CreditContextType {
   signup: (email: string, name: string, password: string) => Promise<boolean>;
   logout: () => Promise<boolean>;
   resetDailyCredits: () => void;
+  refreshCredits: () => void;
   credits?: number; // Total combined credits
+  dailyLimit: number; // 500 or 750
   setUser?: (user: User) => void; // Function to update user
 }
