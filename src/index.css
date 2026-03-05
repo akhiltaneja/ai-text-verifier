@@ -1,0 +1,171 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 220 60% 50%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 220 60% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+ 
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 220 60% 50%;
+ 
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* AI Detection result highlights */
+.result-highlight-ai {
+  @apply bg-destructive/10 text-destructive border-b border-dashed border-destructive/40;
+  position: relative;
+}
+
+.result-highlight-human {
+  @apply bg-success/10 text-success border-b border-dashed border-success/40;
+  position: relative;
+}
+
+.result-highlight-ai::before,
+.result-highlight-human::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 4px;
+  top: 0;
+  bottom: 0;
+}
+
+.result-highlight-ai::before {
+  @apply bg-destructive;
+}
+
+.result-highlight-human::before {
+  @apply bg-success;
+}
+
+/* Grammar checker highlighted text */
+.grammar-error {
+  @apply bg-destructive/10 text-destructive px-0.5 rounded-sm border-b border-dashed border-destructive/40;
+}
+
+.grammar-corrected {
+  @apply bg-success/10 text-success px-0.5 rounded-sm border-b border-dashed border-success/40;
+}
+
+.corrected-text-container {
+  @apply bg-success/5 border border-success/20 rounded-lg p-4;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent;
+}
+
+/* Animation classes */
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-slide-up.delay-100 {
+  animation-delay: 100ms;
+}
+
+.animate-slide-up.delay-150 {
+  animation-delay: 150ms;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Fix background for grammar checker input */
+.grammar-checker-input,
+.translation-input,
+.ai-detector-input {
+  @apply bg-background border border-border;
+}
+
+/* Fix for textarea backgrounds */
+textarea.resize-none {
+  @apply bg-background;
+}
+
+/* Fix for yearly discount tag */
+.yearly-discount-tag {
+  @apply bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-medium;
+  position: relative;
+}
+

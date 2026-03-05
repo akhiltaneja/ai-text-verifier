@@ -1,0 +1,5 @@
+
+project_id = "pxlqqofwetpycafstjth"
+
+[functions.create-paypal-checkout]
+verify_jwt = false
