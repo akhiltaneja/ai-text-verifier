@@ -1,95 +1,85 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 export const Hero: React.FC = () => {
   return (
-    <div className="relative px-4 overflow-hidden">
-      <div className="container mx-auto max-w-6xl">
-        <div className="flex flex-col items-center text-center mb-12">
-          <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in">
-            Comprehensive Content Analysis Suite
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 animate-slide-up">
-            Professional Tools for
-            <span className="block text-primary"> Content Creators</span>
-          </h1>
-          
-          <p className="text-lg text-muted-foreground max-w-2xl mb-8 leading-relaxed animate-slide-up delay-100">
-            Verify content authenticity, improve grammar, and summarize long text with our suite of professional content tools designed for writers, marketers, and publishers.
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-4 animate-slide-up delay-150">
-            <Link to="/ai-detector">
-              <Button size="lg" className="gap-2 text-base px-6 py-6 h-12">
-                Try AI Detector
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            
-            <Link to="/ai-summary">
-              <Button size="lg" variant="outline" className="gap-2">
-                Try AI Summary
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-        
-        <FeatureShowcase />
+    <div className="relative pt-8 pb-10 md:pt-12 md:pb-12 overflow-hidden bg-white">
+      {/* Subtle modern background gradient mesh */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-blob" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-violet-100/50 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-blob animation-delay-4000" />
       </div>
-    </div>
-  );
-};
 
-// Feature Showcase Component
-const FeatureShowcase: React.FC = () => {
-  const features = [
-    {
-      icon: <AlertTriangle className="h-10 w-10 text-primary" />,
-      title: "AI Content Detector",
-      description: "Analyze text to determine if it was written by AI models like ChatGPT, Gemini, or Claude with sentence-level detection.",
-      link: "/ai-detector"
-    },
-    {
-      icon: <CheckCircle className="h-10 w-10 text-primary" />,
-      title: "Grammar Checker",
-      description: "Identify grammatical errors, improve readability, and enhance the overall quality of your writing with our advanced checker.",
-      link: "/grammar-checker"
-    },
-    {
-      icon: <FileText className="h-10 w-10 text-primary" />,
-      title: "AI Summary Tool",
-      description: "Automatically summarize long articles, reports, and documents into concise, readable summaries that capture key points.",
-      link: "/ai-summary"
-    }
-  ];
+      <div className="container mx-auto max-w-5xl relative z-10 px-4">
+        <div className="flex flex-col items-center text-center">
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-16">
-      {features.map((feature, index) => (
-        <div 
-          key={index} 
-          className="relative rounded-xl p-6 border bg-card animate-scale-in"
-          style={{ animationDelay: `${index * 150}ms` }}
-        >
-          <div className="mb-4">
-            {feature.icon}
-          </div>
-          <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-          <p className="text-muted-foreground mb-6">{feature.description}</p>
-          <Link 
-            to={feature.link} 
-            className="inline-flex items-center text-primary hover:text-primary/80 transition-colors"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium mb-8 shadow-sm"
           >
-            Try it now
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
+            <Sparkles className="w-4 h-4 text-primary mr-2" />
+            Voted #1 Enterprise AI Detection Engine
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 text-slate-900 leading-[1.1]"
+          >
+            Verify Content Authenticity with
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-600 pb-2">
+              Absolute Precision
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-lg md:text-xl text-slate-600 max-w-2xl mb-12 leading-relaxed"
+          >
+            Our heuristic engine analyzes burstiness, vocabulary entropy, and sentence variance to detect AI-generated text with industry-leading accuracy. Protect your academic integrity, SEO rankings, and brand voice.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
+          >
+            <Link to="/ai-detector" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto gap-2 text-base px-8 h-14 bg-primary hover:bg-primary/90 rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                Try AI Detector Free
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+
+            <Link to="/pricing" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto gap-2 text-base px-8 h-14 rounded-full border-slate-200 hover:bg-slate-50 shadow-sm transition-all text-slate-700">
+                View Pricing
+              </Button>
+            </Link>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-slate-500 font-medium"
+          >
+            <span className="flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" /> No credit card required</span>
+            <span className="flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" /> Unlimited scans on Pro</span>
+            <span className="flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" /> Supports 50+ Languages</span>
+          </motion.div>
         </div>
-      ))}
+      </div>
     </div>
   );
 };

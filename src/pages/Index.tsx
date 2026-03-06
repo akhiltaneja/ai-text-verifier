@@ -1,17 +1,6 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Layout } from '@/components/Layout';
-import { Hero } from '@/components/ui/animated-hero';
-import { lazy, Suspense } from 'react';
-import { FAQSection } from '@/components/index/FAQSection';
-import { AdvertisementBanner } from '@/components/index/AdvertisementBanner';
-
-// Lazy load components that are further down the page
-const StatisticsSection = lazy(() => import('@/components/index/StatisticsSection').then(module => ({ default: module.StatisticsSection })));
-const TestimonialsSection = lazy(() => import('@/components/index/TestimonialsSection').then(module => ({ default: module.TestimonialsSection })));
-const ToolsSection = lazy(() => import('@/components/index/ToolsSection').then(module => ({ default: module.ToolsSection })));
-const EnhancedPricingSection = lazy(() => import('@/components/index/EnhancedPricingSection').then(module => ({ default: module.EnhancedPricingSection })));
-const AIDetectionDemo = lazy(() => import('@/components/index/AIDetectionDemo').then(module => ({ default: module.AIDetectionDemo })));
+import { Helmet } from 'react-helmet';
 
 // Simple loading component
 const SectionLoader = () => (
@@ -20,14 +9,26 @@ const SectionLoader = () => (
   </div>
 );
 
+// Landing Page Components
+import { Hero } from '@/components/ui/animated-hero';
+const HowItWorks = lazy(() => import('@/components/index/HowItWorks').then(module => ({ default: module.HowItWorks })));
+const DetectionMethodology = lazy(() => import('@/components/index/DetectionMethodology').then(module => ({ default: module.DetectionMethodology })));
+const AIDetectionDemo = lazy(() => import('@/components/index/AIDetectionDemo').then(module => ({ default: module.AIDetectionDemo })));
+const ToolsSection = lazy(() => import('@/components/index/ToolsSection').then(module => ({ default: module.ToolsSection })));
+const StatsBanner = lazy(() => import('@/components/index/StatsBanner').then(module => ({ default: module.StatsBanner })));
+const EnhancedPricingSection = lazy(() => import('@/components/index/EnhancedPricingSection').then(module => ({ default: module.EnhancedPricingSection })));
+const TestimonialsSection = lazy(() => import('@/components/index/TestimonialsSection').then(module => ({ default: module.TestimonialsSection })));
+import { FAQSection } from '@/components/index/FAQSection';
+import { AdvertisementBanner } from '@/components/index/AdvertisementBanner';
+
 const Index = () => {
   // Ensure page starts at the top
   useEffect(() => {
     window.scrollTo(0, 0);
-    
+
     // Set document title and meta tags
     document.title = "AI Content Tools - AI Detector, Grammar Checker & Translation";
-    
+
     // Create or update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -36,7 +37,7 @@ const Index = () => {
       document.head.appendChild(metaDescription);
     }
     metaDescription.setAttribute('content', 'Professional tools for content analysis: AI detection, grammar checking, summarization and translation services for writers, educators and businesses.');
-    
+
     // Create or update meta keywords
     let metaKeywords = document.querySelector('meta[name="keywords"]');
     if (!metaKeywords) {
@@ -46,65 +47,71 @@ const Index = () => {
     }
     metaKeywords.setAttribute('content', 'AI detector, Grammar checker, AI content tools, text summarizer, translation tool');
   }, []);
-  
+
   return (
     <Layout>
-      <div className="space-y-0 relative w-full bg-white">
-        {/* Hero Section - removed extra padding */}
+      <div className="space-y-0 relative w-full bg-white flex flex-col min-h-screen font-sans">
+
+        {/* 1. Hero banner */}
         <section className="relative overflow-hidden">
           <Hero />
         </section>
-        
-        {/* Tools Section as second section */}
-        <section className="py-16 bg-white relative overflow-hidden">
-          <div className="container mx-auto px-4 relative z-10">
-            <Suspense fallback={<SectionLoader />}>
-              <ToolsSection />
-            </Suspense>
+
+        {/* 2. How the process works visually */}
+        <Suspense fallback={<SectionLoader />}>
+          <HowItWorks />
+        </Suspense>
+
+        {/* 3. Technical explanation of AI detection to build authority */}
+        <Suspense fallback={<SectionLoader />}>
+          <DetectionMethodology />
+        </Suspense>
+
+        {/* 4. Live demo of the core feature (AI detection) */}
+        <section className="py-24 bg-slate-50 border-y border-slate-100">
+          <div className="container px-4 md:px-6 max-w-5xl mx-auto">
+            <div className="text-center max-w-[800px] mx-auto mb-16">
+              <div className="inline-block px-3 py-1 rounded-full bg-violet-100/50 text-violet-700 text-sm font-medium mb-4 border border-violet-200">
+                Live Demo
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-slate-900 mb-4">Try Our Detection Engine</h2>
+              <p className="text-lg text-slate-500">
+                Paste your text below to see our heuristic algorithms in action. It's fast, accurate, and completely free.
+              </p>
+            </div>
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-2 md:p-8">
+              <Suspense fallback={<SectionLoader />}>
+                <AIDetectionDemo />
+              </Suspense>
+            </div>
           </div>
         </section>
-        
-        {/* AI Detection Demo */}
-        <section className="py-16 relative">
-          <Suspense fallback={<SectionLoader />}>
-            <AIDetectionDemo />
-          </Suspense>
-        </section>
-        
-        {/* Statistics */}
-        <section className="relative bg-gradient-to-b from-white to-primary/5">
-          <div className="relative z-10">
-            <Suspense fallback={<SectionLoader />}>
-              <StatisticsSection />
-            </Suspense>
-          </div>
-        </section>
-        
-        {/* Pricing */}
-        <section className="py-16">
-          <Suspense fallback={<SectionLoader />}>
-            <EnhancedPricingSection />
-          </Suspense>
-        </section>
-        
-        {/* Testimonials */}
-        <section className="bg-gradient-to-b from-white to-primary/5 py-16 relative">
-          <div className="container mx-auto px-4 relative z-10">
-            <Suspense fallback={<SectionLoader />}>
-              <TestimonialsSection />
-            </Suspense>
-          </div>
-        </section>
-        
-        {/* Advertisement Banner - Added above FAQ section */}
-        <section className="py-12 bg-white">
-          <AdvertisementBanner />
-        </section>
-        
-        {/* FAQ - Now directly imported instead of lazy loaded */}
+
+        {/* 5. Bento grid of available tools */}
+        <Suspense fallback={<SectionLoader />}>
+          <ToolsSection />
+        </Suspense>
+
+        {/* 6. Social proof statistics */}
+        <Suspense fallback={<SectionLoader />}>
+          <StatsBanner />
+        </Suspense>
+
+        {/* 7. Value-driven pricing section */}
+        <Suspense fallback={<SectionLoader />}>
+          <EnhancedPricingSection />
+        </Suspense>
+
+        {/* 8. User reviews */}
+        <Suspense fallback={<SectionLoader />}>
+          <TestimonialsSection />
+        </Suspense>
+
+        {/* 9. FAQs */}
         <section className="py-16">
           <FAQSection />
         </section>
+
       </div>
     </Layout>
   );

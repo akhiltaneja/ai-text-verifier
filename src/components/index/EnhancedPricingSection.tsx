@@ -70,13 +70,27 @@ export const PRICING_TIERS = [
 
 export const EnhancedPricingSection: React.FC = () => {
   return (
-    <div className="py-0">
-      <PricingSection
-        title="Simple, Transparent Pricing"
-        subtitle="Choose the plan that best fits your needs with no hidden fees"
-        frequencies={PAYMENT_FREQUENCIES}
-        tiers={PRICING_TIERS}
-      />
-    </div>
+    <section className="py-24 bg-slate-50 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -ml-[500px] w-[1000px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="container relative z-10">
+        <div className="text-center mb-16">
+          <div className="inline-block px-3 py-1 rounded-full bg-emerald-100/50 text-emerald-700 text-sm font-medium mb-4 border border-emerald-200">
+            Special Launch Pricing
+          </div>
+          <h2 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">
+            Enterprise Grade. <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">Startup Price.</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-lg text-slate-500">
+            Stop paying $30/month for single tools. Get our complete, highly-accurate AI detection and content analysis suite for a fraction of the cost.
+          </p>
+        </div>
+        <PricingSection
+          title=""
+          subtitle=""
+          frequencies={PAYMENT_FREQUENCIES}
+          tiers={PRICING_TIERS}
+        />
+      </div>
+    </section>
   );
 };

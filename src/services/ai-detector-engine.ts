@@ -750,6 +750,17 @@ export function detectAIContent(text: string): EngineResult {
         finalScore = Math.max(85, finalScore);
     }
 
+    // Generate sentence-level analysis
+    const sentenceAnalyses: SentenceAnalysis[] = sentences.map(s => analyzeSentence(s, sentences));
+
+    // Extract highlighted sentences
+    const highlightedSentences = sentenceAnalyses
+        .filter(s => s.aiProbability > 55)
+        .map(s => s.text);
+
+    // Generate improved version
+    const improvedVersion = generateImprovedVersion(text, sentenceAnalyses);
+
     return {
         sentences: sentenceAnalyses,
         overallScore: Math.min(100, Math.max(0, finalScore)),

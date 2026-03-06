@@ -50,28 +50,28 @@ export function Navigation() {
   // Calculate total max credits (for display purposes)
   const maxCreditsPerTool = isLoggedIn ? 750 : 500;
   const totalMaxCredits = Object.keys(availableCredits || {}).length * maxCreditsPerTool;
-  
+
   const creditPercentage = totalMaxCredits > 0 ? (credits || 0) / totalMaxCredits * 100 : 0;
 
   // Generate a consistent avatar based on user ID
   const getAvatarUrl = () => {
     if (!user?.id) return null;
-    
+
     const avatarStyle = user?.avatar_style || getAvatarStyleForUser(user.id);
     return `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${user.id}`;
   };
-  
+
   // Function to determine consistent avatar style based on user ID
   const getAvatarStyleForUser = (userId: string) => {
     const avatarStyles = ['adventurer', 'avataaars', 'bottts', 'fun-emoji', 'thumbs', 'lorelei'];
-    
+
     // Convert userId string to a number for consistent selection
     let hash = 0;
     for (let i = 0; i < userId.length; i++) {
-       hash = ((hash << 5) - hash) + userId.charCodeAt(i);
-       hash = hash & hash; // Convert to 32bit integer
+      hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+      hash = hash & hash; // Convert to 32bit integer
     }
-    
+
     // Use absolute value and modulo to get a consistent index
     const styleIndex = Math.abs(hash) % avatarStyles.length;
     return avatarStyles[styleIndex];
@@ -89,21 +89,25 @@ export function Navigation() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-200 ${
-        scrolled ? 'bg-white/80 backdrop-blur-lg shadow-sm' : 'bg-white'
-      }`}
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-100' : 'bg-white/50 backdrop-blur-sm'
+        }`}
     >
-      <div className="container relative flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center">
-          <img src={logo} alt="aitextverifier" className="h-20 w-auto object-contain -my-2" />
+      <div className="container relative flex items-center justify-between h-16 md:h-20">
+        <Link to="/" className="flex items-center group">
+          <img
+            src={logo}
+            alt="AI Text Verifier"
+            className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            style={{ transformOrigin: 'left center', transform: 'scale(1.4) translateX(10%)' }}
+          />
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
           {navigationLinks.map((link) => (
-            <Link 
-              key={link.path} 
-              to={link.path} 
-              className="hover:text-primary transition-colors"
+            <Link
+              key={link.path}
+              to={link.path}
+              className="px-4 py-2 text-sm font-medium text-slate-700 rounded-full hover:text-primary hover:bg-primary/5 transition-all duration-200"
             >
               {link.text}
             </Link>
@@ -116,9 +120,9 @@ export function Navigation() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
                   <Avatar className="h-10 w-10 border border-primary/20">
-                    <AvatarImage 
-                      src={getAvatarUrl()} 
-                      alt={user?.name || 'User'} 
+                    <AvatarImage
+                      src={getAvatarUrl()}
+                      alt={user?.name || 'User'}
                     />
                     <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
@@ -161,7 +165,7 @@ export function Navigation() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <Languages className="mr-2 h-4 w-4" />
@@ -183,7 +187,7 @@ export function Navigation() {
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
-                
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -192,7 +196,12 @@ export function Navigation() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="default" size="md" onClick={() => setOpenAuthModal(true)}>
+            <Button
+              variant="default"
+              size="lg"
+              className="rounded-full font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all text-sm px-6"
+              onClick={() => setOpenAuthModal(true)}
+            >
               {t('navigation.login')}
             </Button>
           )}
@@ -228,9 +237,9 @@ export function Navigation() {
         <div className="md:hidden border-b bg-white backdrop-blur-sm">
           <div className="container flex flex-col py-4 space-y-3">
             {navigationLinks.map((link) => (
-              <Link 
-                key={link.path} 
-                to={link.path} 
+              <Link
+                key={link.path}
+                to={link.path}
                 className="hover:text-primary transition-colors"
               >
                 {link.text}
@@ -267,6 +276,6 @@ function getLanguageDisplay(lang: string): string {
     'de': 'Deutsch',
     'zh': '中文'
   };
-  
+
   return languageNames[lang] || 'English';
 }
