@@ -93,12 +93,11 @@ export function Navigation() {
         }`}
     >
       <div className="container relative flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="flex items-center group">
+        <Link to="/" className="flex items-center group relative h-full w-[250px]">
           <img
             src={logo}
             alt="AI Text Verifier"
-            className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-            style={{ transformOrigin: 'left center', transform: 'scale(1.4) translateX(10%)' }}
+            className="absolute top-1/2 -translate-y-1/2 left-0 h-[95px] md:h-[125px] w-auto object-contain object-left mix-blend-multiply"
           />
         </Link>
 

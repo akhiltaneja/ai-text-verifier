@@ -31,10 +31,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 text-center md:text-left">
             <div className="md:col-span-2">
-              <div className="flex items-center justify-center md:justify-start mb-6">
-                <img src={logo} alt="AI Text Verifier" className="h-20 w-auto object-contain" style={{ transformOrigin: 'left center', transform: 'scale(1.2)' }} />
+              <div className="flex items-center justify-center md:justify-start mb-8">
+                <img src={logo} alt="AI Text Verifier" className="h-36 md:h-[180px] w-auto object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply" />
               </div>
-              <p className="text-base text-slate-500 mb-6 max-w-sm mx-auto md:mx-0 leading-relaxed">
+              <p className="text-lg text-slate-500 mb-6 max-w-sm mx-auto md:mx-0 leading-relaxed font-medium">
                 Professional content analysis tools for writers, marketers, and educators. Detect AI, check grammar, summarize, and translate with enterprise-grade accuracy.
               </p>
               <div className="flex items-center justify-center md:justify-start space-x-4">

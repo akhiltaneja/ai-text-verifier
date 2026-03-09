@@ -9,7 +9,7 @@ const corsHeaders = {
 const DAILY_LIMIT_LOGGED_IN = 750;
 const DAILY_LIMIT_ANONYMOUS = 500;
 const DAILY_LIMIT_ADMIN = 999999;
-const ADMIN_EMAILS = ['admin@aitextverifier.com'];
+const ADMIN_EMAILS = ['admin@aitextverifier.com', 'test@aitextverifier.com'];
 
 serve(async (req) => {
     if (req.method === 'OPTIONS') {

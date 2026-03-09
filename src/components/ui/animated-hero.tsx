@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 export const Hero: React.FC = () => {
   return (
-    <div className="relative pt-8 pb-10 md:pt-12 md:pb-12 overflow-hidden bg-white">
+    <div className="relative pt-4 pb-8 md:pt-6 md:pb-10 overflow-hidden bg-white">
       {/* Subtle modern background gradient mesh */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-blob" />

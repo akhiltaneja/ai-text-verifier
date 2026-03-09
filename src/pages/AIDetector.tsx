@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '@/components/Layout';
 import { TextEditor } from '@/components/TextEditor';
-import { CreditDisplay } from '@/components/CreditDisplay';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { AnalysisResultDisplay } from '@/components/ai-detector/AnalysisResult';
 import { TextHighlighter } from '@/components/ai-detector/components/TextHighlighter';
@@ -127,67 +126,94 @@ const AIDetector = () => {
       <div className="bg-slate-50 min-h-[calc(100vh-4rem)] flex flex-col">
         <div className="w-full h-full mx-auto px-2 sm:px-4 lg:px-6 py-4 flex flex-col flex-1 max-w-[1800px]">
 
-          {/* Header Row - ultra compact */}
-          <div className="flex justify-between items-center mb-4 px-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">AI Content Detector</h1>
-              <div className="hidden sm:flex h-5 w-px bg-slate-300"></div>
-              <p className="hidden sm:block text-xs text-slate-500 font-medium">Clear, precise verification</p>
-            </div>
-            <div className="bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200">
-              <CreditDisplay tool="ai-detector" />
-            </div>
-          </div>
+          {/* The Single Massive Quillbot-Style Card Container */}
+          <div className="max-w-[1500px] w-full mx-auto flex-1 bg-white rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200 flex flex-col lg:flex-row overflow-hidden min-h-[700px]">
 
-          {error && (
-            <div className="p-3 mb-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm font-medium">
-              {error}
-            </div>
-          )}
-
-          {/* SaaS Workspace Split-Pane Layout */}
-          <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
-
-            {/* LEFT PANE: Text Editor */}
-            <div className={`transition-all duration-500 ease-in-out h-auto lg:h-full flex flex-col ${result || isProcessing ? 'lg:w-[55%] xl:w-[60%]' : 'lg:w-full max-w-5xl mx-auto'}`}>
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden h-full min-h-[500px] lg:min-h-0 flex flex-col flex-1">
-                <TextEditor
-                  onTextSubmit={handleTextSubmit}
-                  isProcessing={isProcessing}
-                  tool="ai-detector"
-                  placeholder="Paste your text here to analyze for AI-generated content..."
-                  className="flex-grow rounded-2xl border-none shadow-none"
-                />
-              </div>
+            {/* LEFT PANE: Editor Area */}
+            <div className="flex-1 flex flex-col min-h-[500px] lg:min-h-0 relative z-10">
+              <TextEditor
+                onTextSubmit={handleTextSubmit}
+                isProcessing={isProcessing}
+                tool="ai-detector"
+                placeholder="To analyze text, add at least 40 words."
+                className="flex-grow h-full border-none shadow-none bg-transparent"
+              />
             </div>
 
-            {/* RIGHT PANE: Loading State */}
-            {isProcessing && (
-              <div className="w-full lg:w-[45%] xl:w-[40%] flex justify-center items-center h-full min-h-[500px] lg:min-h-0 animate-fade-in bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex flex-col items-center">
-                  <div className="relative">
-                    <Loader2 className="w-12 h-12 text-primary animate-spin mb-6" />
-                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+            {/* RIGHT PANE: Results Area */}
+            <div className="w-full lg:w-[400px] xl:w-[480px] bg-[#fdfdfd] border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col h-auto lg:h-full overflow-y-auto custom-scrollbar relative z-0">
+              {/* Empty State / Loading State / Results State */}
+
+              {!result && !isProcessing && (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in relative overflow-hidden">
+                  {/* Decorative background blurs mimicking Quillbot's aesthetic */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-slate-100/50 rounded-full blur-3xl -mr-32 -mt-32"></div>
+
+                  <div className="relative z-10 w-full max-w-[280px]">
+                    <div className="flex items-center justify-center gap-4 mb-8">
+                      <div className="w-12 h-[3px] bg-slate-200 rounded-full"></div>
+                      <span className="text-4xl font-light text-slate-400">%</span>
+                      <div className="w-12 h-[3px] bg-slate-200 rounded-full"></div>
+                    </div>
+
+                    <h3 className="text-[17px] text-slate-700 font-medium mb-12">Add text to begin analysis</h3>
+
+                    {/* Mock empty result bars */}
+                    <div className="space-y-5 text-left bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-100/50">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                          <span className="text-slate-600 font-medium">AI-generated</span>
+                        </div>
+                        <span className="text-slate-400 font-medium">--%</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-300"></div>
+                          <span className="text-slate-600 font-medium">Human & AI-refined</span>
+                        </div>
+                        <span className="text-slate-400 font-medium">--%</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-2.5 h-2.5 rounded-full border-[1.5px] border-slate-300"></div>
+                          <span className="text-slate-600 font-medium">Human-written</span>
+                        </div>
+                        <span className="text-slate-400 font-medium">--%</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xl font-semibold text-slate-800">Analyzing Content</span>
-                  <p className="text-sm text-slate-500 mt-2 text-center max-w-[250px]">
-                    Running real-time heuristic checks for burstiness and entropy variance...
-                  </p>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* RIGHT PANE: Results Dashboard */}
-            {result && !isProcessing && (
-              <div ref={resultSectionRef} className="w-full h-auto lg:h-full lg:w-[45%] xl:w-[40%] animate-in slide-in-from-right-8 duration-500 overflow-y-auto custom-scrollbar pr-1 pb-4">
-                <AnalysisResultDisplay
-                  result={result}
-                  downloadReport={downloadReport}
-                  verdict={getVerdict(result.overallScore)}
-                />
-              </div>
-            )}
+              {isProcessing && (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in relative">
+                  <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full scale-150" />
+                  <div className="relative z-10">
+                    <div className="flex justify-center mb-6">
+                      <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 inline-block">
+                        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                      </div>
+                    </div>
+                    <span className="block text-xl font-bold text-slate-800 mb-2">Analyzing Content</span>
+                    <p className="text-sm text-slate-500 max-w-[250px] mx-auto">
+                      Scanning for patterns, burstiness, and vocabulary entropy...
+                    </p>
+                  </div>
+                </div>
+              )}
 
+              {result && !isProcessing && (
+                <div ref={resultSectionRef} className="h-full animate-in fade-in duration-500">
+                  <AnalysisResultDisplay
+                    result={result}
+                    downloadReport={downloadReport}
+                    verdict={getVerdict(result.overallScore)}
+                  />
+                </div>
+              )}
+
+            </div>
           </div>
 
         </div>

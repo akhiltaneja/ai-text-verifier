@@ -102,12 +102,15 @@ const Index = () => {
           <EnhancedPricingSection />
         </Suspense>
 
-        {/* 8. User reviews */}
+        {/* 8. Special Offer Banner */}
+        <AdvertisementBanner />
+
+        {/* 9. User reviews */}
         <Suspense fallback={<SectionLoader />}>
           <TestimonialsSection />
         </Suspense>
 
-        {/* 9. FAQs */}
+        {/* 10. FAQs */}
         <section className="py-16">
           <FAQSection />
         </section>
