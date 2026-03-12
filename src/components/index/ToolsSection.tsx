@@ -13,9 +13,8 @@ export const ToolsSection: React.FC = () => {
       icon: <GanttChart className="h-6 w-6 text-indigo-400 group-hover:text-white transition-colors" />,
       link: '/ai-detector',
       bgColor: 'bg-indigo-500/10',
-      borderColor: 'border-indigo-500/20',
       hoverBorder: 'hover:border-indigo-500/50',
-      span: 'md:col-span-2 md:row-span-2'
+      span: 'md:col-span-1 md:row-span-1'
     },
     {
       id: 'grammar-checker',
@@ -46,9 +45,8 @@ export const ToolsSection: React.FC = () => {
       icon: <Languages className="h-6 w-6 text-rose-400 group-hover:text-white transition-colors" />,
       link: '/translator',
       bgColor: 'bg-rose-500/10',
-      borderColor: 'border-rose-500/20',
       hoverBorder: 'hover:border-rose-500/50',
-      span: 'md:col-span-2 md:row-span-1'
+      span: 'md:col-span-1 md:row-span-1'
     },
   ];
 
@@ -95,7 +93,7 @@ export const ToolsSection: React.FC = () => {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
           {tools.map((tool, index) => (
             <motion.div
               key={tool.id}

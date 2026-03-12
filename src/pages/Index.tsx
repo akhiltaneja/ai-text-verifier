@@ -1,6 +1,5 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Layout } from '@/components/Layout';
-import { Helmet } from 'react-helmet';
 
 // Simple loading component
 const SectionLoader = () => (
@@ -11,7 +10,7 @@ const SectionLoader = () => (
 
 // Landing Page Components
 import { Hero } from '@/components/ui/animated-hero';
-const HowItWorks = lazy(() => import('@/components/index/HowItWorks').then(module => ({ default: module.HowItWorks })));
+const ModelArchitecture = lazy(() => import('@/components/index/ModelArchitecture').then(module => ({ default: module.ModelArchitecture })));
 const DetectionMethodology = lazy(() => import('@/components/index/DetectionMethodology').then(module => ({ default: module.DetectionMethodology })));
 const AIDetectionDemo = lazy(() => import('@/components/index/AIDetectionDemo').then(module => ({ default: module.AIDetectionDemo })));
 const ToolsSection = lazy(() => import('@/components/index/ToolsSection').then(module => ({ default: module.ToolsSection })));
@@ -59,7 +58,7 @@ const Index = () => {
 
         {/* 2. How the process works visually */}
         <Suspense fallback={<SectionLoader />}>
-          <HowItWorks />
+          <ModelArchitecture />
         </Suspense>
 
         {/* 3. Technical explanation of AI detection to build authority */}
@@ -70,15 +69,6 @@ const Index = () => {
         {/* 4. Live demo of the core feature (AI detection) */}
         <section className="py-24 bg-slate-50 border-y border-slate-100">
           <div className="container px-4 md:px-6 max-w-5xl mx-auto">
-            <div className="text-center max-w-[800px] mx-auto mb-16">
-              <div className="inline-block px-3 py-1 rounded-full bg-violet-100/50 text-violet-700 text-sm font-medium mb-4 border border-violet-200">
-                Live Demo
-              </div>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-slate-900 mb-4">Try Our Detection Engine</h2>
-              <p className="text-lg text-slate-500">
-                Paste your text below to see our heuristic algorithms in action. It's fast, accurate, and completely free.
-              </p>
-            </div>
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-2 md:p-8">
               <Suspense fallback={<SectionLoader />}>
                 <AIDetectionDemo />

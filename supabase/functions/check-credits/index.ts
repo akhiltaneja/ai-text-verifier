@@ -7,9 +7,10 @@ const corsHeaders = {
 };
 
 const DAILY_LIMIT_LOGGED_IN = 750;
+const DAILY_LIMIT_PREMIUM = 5000;
+const DAILY_LIMIT_UNLIMITED = 999999;
 const DAILY_LIMIT_ANONYMOUS = 500;
-const DAILY_LIMIT_ADMIN = 999999;
-const ADMIN_EMAILS = ['admin@aitextverifier.com', 'test@aitextverifier.com'];
+const ADMIN_EMAILS = ['admin@aitextverifier.com', 'test@aitextverifier.com', 'test2@aitextverifier.com'];
 
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
@@ -49,15 +50,29 @@ serve(async (req) => {
         const { action, tool, wordCount } = await req.json();
         const today = new Date().toISOString().split('T')[0]; // UTC date YYYY-MM-DD
 
-        // Determine the daily limit for this user
-        const isUserAdmin = user.email && ADMIN_EMAILS.includes(user.email);
-        const userDailyLimit = isUserAdmin ? DAILY_LIMIT_ADMIN : DAILY_LIMIT_LOGGED_IN;
+        // Determine the user's active subscription plan from app_metadata
+        let activePlan = 'free'; // default
+        if (user.app_metadata && user.app_metadata.subscription_plan) {
+            activePlan = user.app_metadata.subscription_plan.toLowerCase();
+        }
+
+        // Determine the daily limit for this user based on their plan
+        let userDailyLimit = DAILY_LIMIT_LOGGED_IN;
+
+        if (activePlan === 'unlimited' || ADMIN_EMAILS.includes(user.email || '')) {
+            userDailyLimit = DAILY_LIMIT_UNLIMITED;
+            activePlan = 'unlimited'; // FORCE admins visually to unlimited
+        } else if (activePlan === 'premium') {
+            userDailyLimit = DAILY_LIMIT_PREMIUM;
+        }
+
+        console.log(`User ${user.id} (${user.email}) plan: ${activePlan}, limit: ${userDailyLimit}`);
 
         if (action === 'check') {
             // Return current usage for all tools today
             const { data: usageRows, error: fetchError } = await supabaseAdmin
                 .from('daily_usage')
-                .select('tool, words_used')
+                .select('words_used')
                 .eq('user_id', user.id)
                 .eq('usage_date', today);
 
@@ -66,26 +81,25 @@ serve(async (req) => {
                 throw new Error('Failed to fetch usage');
             }
 
-            // Build remaining credits map
+            // Calculate total global usage across all tools
+            let totalWordsUsed = 0;
+            if (usageRows) {
+                totalWordsUsed = usageRows.reduce((sum: any, row: any) => sum + row.words_used, 0);
+            }
+            const globalRemaining = Math.max(0, userDailyLimit - totalWordsUsed);
+
+            // Build unified remaining credits map
             const remaining: Record<string, number> = {
-                'ai-detector': userDailyLimit,
-                'grammar-checker': userDailyLimit,
-                'paraphrasing': userDailyLimit,
-                'summarization': userDailyLimit,
-                'ai-summary': userDailyLimit,
-                'translation': userDailyLimit,
+                'ai-detector': globalRemaining,
+                'grammar-checker': globalRemaining,
+                'paraphrasing': globalRemaining,
+                'summarization': globalRemaining,
+                'ai-summary': globalRemaining,
+                'translation': globalRemaining,
             };
 
-            if (usageRows) {
-                for (const row of usageRows) {
-                    if (row.tool in remaining) {
-                        remaining[row.tool] = Math.max(0, userDailyLimit - row.words_used);
-                    }
-                }
-            }
-
             return new Response(
-                JSON.stringify({ success: true, remaining, dailyLimit: userDailyLimit }),
+                JSON.stringify({ success: true, remaining, dailyLimit: userDailyLimit, plan: activePlan }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
@@ -98,8 +112,35 @@ serve(async (req) => {
                 );
             }
 
-            // Get current usage for this tool today
-            const { data: existing, error: fetchError } = await supabaseAdmin
+            // Get current usage for ALL tools today to enforce global pool
+            const { data: usageRows, error: fetchError } = await supabaseAdmin
+                .from('daily_usage')
+                .select('words_used')
+                .eq('user_id', user.id)
+                .eq('usage_date', today);
+
+            if (fetchError) {
+                console.error('Fetch error:', fetchError);
+                throw new Error('Failed to check usage');
+            }
+
+            const totalUsedNow = usageRows ? usageRows.reduce((a: any, b: any) => a + b.words_used, 0) : 0;
+            const globalRemaining = userDailyLimit - totalUsedNow;
+
+            if (wordCount > globalRemaining) {
+                return new Response(
+                    JSON.stringify({
+                        success: false,
+                        error: 'Daily limit exceeded',
+                        remaining: globalRemaining,
+                        dailyLimit: userDailyLimit,
+                    }),
+                    { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
+            }
+
+            // Get the specific tool row to update or insert
+            const { data: existing } = await supabaseAdmin
                 .from('daily_usage')
                 .select('id, words_used')
                 .eq('user_id', user.id)
@@ -107,32 +148,14 @@ serve(async (req) => {
                 .eq('usage_date', today)
                 .maybeSingle();
 
-            if (fetchError) {
-                console.error('Fetch error:', fetchError);
-                throw new Error('Failed to check usage');
-            }
-
-            const currentUsed = existing?.words_used || 0;
-            const remaining = userDailyLimit - currentUsed;
-
-            if (wordCount > remaining) {
-                return new Response(
-                    JSON.stringify({
-                        success: false,
-                        error: 'Daily limit exceeded',
-                        remaining,
-                        dailyLimit: userDailyLimit,
-                    }),
-                    { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-                );
-            }
+            const currentToolUsed = existing?.words_used || 0;
 
             // Upsert: update existing row or create new one
             if (existing) {
                 const { error: updateError } = await supabaseAdmin
                     .from('daily_usage')
                     .update({
-                        words_used: currentUsed + wordCount,
+                        words_used: currentToolUsed + wordCount,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', existing.id);
@@ -160,8 +183,9 @@ serve(async (req) => {
             return new Response(
                 JSON.stringify({
                     success: true,
-                    remaining: remaining - wordCount,
+                    remaining: globalRemaining - wordCount,
                     dailyLimit: userDailyLimit,
+                    plan: activePlan
                 }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );

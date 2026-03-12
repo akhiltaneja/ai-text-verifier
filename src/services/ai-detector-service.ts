@@ -188,7 +188,7 @@ export const generateReportPDF = (result: AnalysisResult): void => {
   doc.save('ai-detection-report.pdf');
 };
 
-// Analyze text function — now uses local engine instead of ZeroGPT
+// Analyze text function — now uses the unified LLM backend (Groq/Llama 3.3)
 export const analyzeText = async (text: string, config: Partial<AIDetectorConfig> = {}): Promise<AnalysisResult> => {
   const mergedConfig: AIDetectorConfig = { ...defaultConfig, ...config };
 
@@ -199,24 +199,61 @@ export const analyzeText = async (text: string, config: Partial<AIDetectorConfig
       throw new Error(message);
     }
 
-    console.log("Starting local AI detection analysis, text length:", text.length);
+    console.log("Sending text to LLM AI detection engine, text length:", text.length);
 
-    // Run the local detection engine
-    const engineResult = detectAIContent(text);
+    // Call the unified LLM edge function
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data, error } = await supabase.functions.invoke('process-llm', {
+      body: {
+        tool: 'aidetect',
+        text: text
+      }
+    });
 
-    console.log("Engine result:", engineResult.overallScore);
+    if (error) {
+      console.error("Supabase edge function error:", error);
+      throw new Error(error.message || "Failed to analyze text using AI engine");
+    }
+
+    if (!data || data.error) {
+      throw new Error(data?.error || "No data returned from AI engine");
+    }
+
+    console.log("LLM AI Detection result received:", data.overallScore, "Provider:", data._provider);
 
     // Generate detailed summary
-    const summary = getDetailedSummary(engineResult.overallScore);
+    const summary = getDetailedSummary(data.overallScore || 0);
 
-    // Build the final result
+    // Mock sentences to prevent UI mapping crashes in VerdictDisplay
+    const mockSentences = [{
+      text: text,
+      aiProbability: data.overallScore || 0,
+      isHuman: (data.overallScore || 0) < 50,
+      features: {
+        entropy: 0,
+        vocabularyScore: 0,
+        formulaicScore: 0,
+        readabilityScore: 0,
+        structureScore: 0,
+        burstyScore: 0,
+      }
+    }];
+
+    // Build the final result enforcing the LLM EngineResult json type map
     const result: AnalysisResult = {
-      sentences: engineResult.sentences,
-      overallScore: engineResult.overallScore,
+      sentences: mockSentences,
+      overallScore: data.overallScore || 0,
       summary,
-      detectionMethods: engineResult.detectionMethods,
-      highlightedSentences: engineResult.highlightedSentences,
-      improvedVersion: engineResult.improvedVersion,
+      detectionMethods: {
+        entropyAnalysis: data.detectionMethods?.entropyAnalysis || 0,
+        vocabularyDiversity: data.detectionMethods?.vocabularyDiversity || 0,
+        sentenceStructure: data.detectionMethods?.sentenceStructure || 0,
+        burstiness: data.detectionMethods?.burstiness || 0,
+        formulaicPhrases: data.detectionMethods?.formulaicPhrases || 0,
+        readabilityConsistency: data.detectionMethods?.readabilityConsistency || 0,
+      },
+      highlightedSentences: data.highlightedSentences || [],
+      improvedVersion: data.improvedVersion || "",
       originalText: text,
     };
 

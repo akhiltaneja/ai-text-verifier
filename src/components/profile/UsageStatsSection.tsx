@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCredits } from '@/context/CreditContext';
 import { BarChart, LineChart, PieChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, Pie } from 'recharts';
 import { Loader2 } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
 
 interface UsageStatsSectionProps {
   userId?: string;
@@ -41,68 +42,100 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
   const [toolUsageData, setToolUsageData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Function to generate random realistic usage data
-  const generateMockData = () => {
-    const dates = [];
-    const today = new Date();
-    
-    // Generate the past 30 days
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
-      dates.push(date.toISOString().split('T')[0]);
+  const fetchRealData = async () => {
+    if (!userId) return;
+
+    try {
+      setIsLoading(true);
+
+      // Get dates for the past 30 days
+      const dates: string[] = [];
+      const today = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        dates.push(date.toISOString().split('T')[0]);
+      }
+
+      const dataMap: Record<string, UsageData> = {};
+      dates.forEach(date => {
+        dataMap[date] = { date, aiDetector: 0, grammarChecker: 0, translation: 0, paraphrasing: 0, summarization: 0, total: 0 };
+      });
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('usage_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      if (error) {
+        console.error("Error fetching usage history:", error);
+        throw error;
+      }
+
+      let totalAiDetector = 0;
+      let totalGrammarChecker = 0;
+      let totalTranslation = 0;
+      let totalParaphrasing = 0;
+      let totalSummarization = 0;
+
+      if (data) {
+        data.forEach((log: any) => {
+          const dateStr = new Date(log.created_at).toISOString().split('T')[0];
+          if (dataMap[dateStr]) {
+            const words = log.word_count || 0;
+            dataMap[dateStr].total += words;
+
+            switch (log.tool_name) {
+              case 'ai-detector':
+                dataMap[dateStr].aiDetector += words;
+                totalAiDetector += words;
+                break;
+              case 'grammar-checker':
+                dataMap[dateStr].grammarChecker += words;
+                totalGrammarChecker += words;
+                break;
+              case 'translator':
+                dataMap[dateStr].translation += words;
+                totalTranslation += words;
+                break;
+              case 'ai-summarizer':
+              case 'ai-summary':
+              case 'summarization':
+                dataMap[dateStr].summarization += words;
+                totalSummarization += words;
+                break;
+              case 'paraphrasing':
+                dataMap[dateStr].paraphrasing += words;
+                totalParaphrasing += words;
+                break;
+            }
+          }
+        });
+      }
+
+      setUsageData(Object.values(dataMap));
+      setToolUsageData([
+        { name: 'AI Detector', value: totalAiDetector },
+        { name: 'Grammar Checker', value: totalGrammarChecker },
+        { name: 'Translation', value: totalTranslation },
+        { name: 'Paraphrasing', value: totalParaphrasing },
+        { name: 'Summarization', value: totalSummarization },
+      ].filter(t => t.value > 0));
+    } catch (err) {
+      console.error("Failed to load real usage stats", err);
+    } finally {
+      setIsLoading(false);
     }
-    
-    // Generate random usage data for each date
-    const data: UsageData[] = dates.map(date => {
-      // Decrease usage for weekends slightly
-      const dateObj = new Date(date);
-      const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-      const multiplier = isWeekend ? 0.6 : 1;
-      
-      const aiDetector = Math.floor(Math.random() * 150 * multiplier);
-      const grammarChecker = Math.floor(Math.random() * 200 * multiplier);
-      const translation = Math.floor(Math.random() * 120 * multiplier);
-      const paraphrasing = Math.floor(Math.random() * 100 * multiplier);
-      const summarization = Math.floor(Math.random() * 80 * multiplier);
-      
-      return {
-        date,
-        aiDetector,
-        grammarChecker,
-        translation,
-        paraphrasing,
-        summarization,
-        total: aiDetector + grammarChecker + translation + paraphrasing + summarization
-      };
-    });
-    
-    // Calculate totals for each tool
-    const totalAiDetector = data.reduce((sum, item) => sum + item.aiDetector, 0);
-    const totalGrammarChecker = data.reduce((sum, item) => sum + item.grammarChecker, 0);
-    const totalTranslation = data.reduce((sum, item) => sum + item.translation, 0);
-    const totalParaphrasing = data.reduce((sum, item) => sum + item.paraphrasing, 0);
-    const totalSummarization = data.reduce((sum, item) => sum + item.summarization, 0);
-    
-    const toolUsageData = [
-      { name: 'AI Detector', value: totalAiDetector },
-      { name: 'Grammar Checker', value: totalGrammarChecker },
-      { name: 'Translation', value: totalTranslation },
-      { name: 'Paraphrasing', value: totalParaphrasing },
-      { name: 'Summarization', value: totalSummarization },
-    ];
-    
-    setUsageData(data);
-    setToolUsageData(toolUsageData);
-    setIsLoading(false);
   };
 
   useEffect(() => {
-    // In a real app, we'd fetch from API/database
-    // For now, generate mock data
-    setTimeout(() => {
-      generateMockData();
-    }, 1000); // Simulate loading
+    if (userId) {
+      fetchRealData();
+    }
   }, [userId]);
 
   const formatDate = (dateString: string) => {
@@ -115,7 +148,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
 
   // Calculate total words analyzed
   const totalWords = usageData.reduce((sum, item) => sum + item.total, 0);
-  
+
   // Calculate current available credits
   const currentCredits = Object.values(availableCredits).reduce((sum, val) => sum + val, 0);
 
@@ -144,7 +177,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
             <p className="text-xs text-muted-foreground mt-1">All time usage</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="py-4">
             <CardTitle className="text-sm font-medium">Available Credits</CardTitle>
@@ -154,7 +187,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
             <p className="text-xs text-muted-foreground mt-1">Credits remaining today</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="py-4">
             <CardTitle className="text-sm font-medium">Most Used Tool</CardTitle>
@@ -164,7 +197,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
             <p className="text-xs text-muted-foreground mt-1">Based on your activity</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="py-4">
             <CardTitle className="text-sm font-medium">Last 7 Days</CardTitle>
@@ -177,7 +210,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Charts and detailed usage */}
       <Tabs defaultValue="usage-chart">
         <TabsList>
@@ -185,7 +218,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
           <TabsTrigger value="tool-breakdown">Tool Breakdown</TabsTrigger>
           <TabsTrigger value="daily-log">Daily Log</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="usage-chart">
           <Card>
             <CardHeader>
@@ -209,7 +242,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" tickFormatter={formatDate} />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number) => [value.toLocaleString(), 'Words']}
                       labelFormatter={(label) => formatDate(label)}
                     />
@@ -225,7 +258,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="tool-breakdown">
           <Card>
             <CardHeader>
@@ -280,7 +313,7 @@ export const UsageStatsSection: React.FC<UsageStatsSectionProps> = ({ userId }) 
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="daily-log">
           <Card>
             <CardHeader>

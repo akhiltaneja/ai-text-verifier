@@ -27,7 +27,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { Progress } from "@/components/ui/progress";
 
 export function Navigation() {
-  const { isLoggedIn, user, logout, credits, availableCredits } = useCredits();
+  const { isLoggedIn, user, logout, credits, availableCredits, dailyLimit, isLoading } = useCredits();
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -47,14 +47,16 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Calculate total max credits (for display purposes)
-  const maxCreditsPerTool = isLoggedIn ? 750 : 500;
-  const totalMaxCredits = Object.keys(availableCredits || {}).length * maxCreditsPerTool;
+  // Since credits map to a global daily pool rather than separate tool pools, max is just dailyLimit
+  const totalMaxCredits = dailyLimit;
 
   const creditPercentage = totalMaxCredits > 0 ? (credits || 0) / totalMaxCredits * 100 : 0;
 
   // Generate a consistent avatar based on user ID
   const getAvatarUrl = () => {
+    // Return explicit saved avatar if user set one in the gallery
+    if (user?.avatar_url) return user.avatar_url;
+    // Otherwise calculate standard fallback
     if (!user?.id) return null;
 
     const avatarStyle = user?.avatar_style || getAvatarStyleForUser(user.id);
@@ -125,9 +127,9 @@ export function Navigation() {
                     />
                     <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
-                  {credits !== undefined && (
+                  {!isLoading && credits !== undefined && (
                     <Badge variant="outline" className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs bg-primary text-white">
-                      {credits}
+                      {totalMaxCredits >= 999999 ? '∞' : credits}
                     </Badge>
                   )}
                 </Button>
@@ -142,11 +144,19 @@ export function Navigation() {
                     <div className="mt-3">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-xs text-muted-foreground">{t('profile.availableCredits')}</span>
-                        <Badge variant="outline" className="px-2 py-0.5 text-xs">
-                          {credits} / {totalMaxCredits}
-                        </Badge>
+                        {!isLoading ? (
+                          <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                            {totalMaxCredits >= 999999 ? 'Unlimited' : `${credits} / ${totalMaxCredits}`}
+                          </Badge>
+                        ) : (
+                          <div className="h-5 w-20 bg-slate-100 animate-pulse rounded"></div>
+                        )}
                       </div>
-                      <Progress value={creditPercentage} className="h-2" />
+                      {isLoading ? (
+                        <div className="h-2 w-full bg-slate-100 animate-pulse rounded mt-2"></div>
+                      ) : (
+                        <Progress value={creditPercentage} className="h-2" />
+                      )}
                     </div>
                   </div>
                 </DropdownMenuLabel>

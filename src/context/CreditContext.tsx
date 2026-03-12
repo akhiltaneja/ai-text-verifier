@@ -22,8 +22,10 @@ const CreditContext = createContext<CreditContextType>({
   logout: async () => false,
   resetDailyCredits: () => { },
   refreshCredits: () => { },
+  isLoading: true,
   credits: 0,
   dailyLimit: 500,
+  subscriptionPlan: 'free',
   setUser: () => { }
 });
 
@@ -46,13 +48,15 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     useCredits: useCreditsManager,
     resetDailyCredits,
     refreshCredits,
+    isLoading,
     dailyLimit,
+    subscriptionPlan,
   } = useCreditManager(isLoggedIn);
 
-  // Calculate total credits whenever availableCredits changes
+  // Since all tools now share a unified global limit, total credits is just the remaining amount.
   useEffect(() => {
-    const total = Object.values(availableCredits).reduce((sum, val) => sum + val, 0);
-    setTotalCredits(total);
+    const unifiedRemaining = Object.values(availableCredits)[0] ?? 0;
+    setTotalCredits(unifiedRemaining);
   }, [availableCredits]);
 
   useEffect(() => {
@@ -142,8 +146,10 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     logout,
     resetDailyCredits,
     refreshCredits,
+    isLoading,
     credits: totalCredits,
     dailyLimit,
+    subscriptionPlan,
     setUser: updateUser
   };
 

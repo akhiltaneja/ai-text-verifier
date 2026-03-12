@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       activity_stats: {
@@ -41,6 +66,66 @@ export type Database = {
           id?: number
           paraphrasing?: number | null
           summary?: number | null
+        }
+        Relationships: []
+      }
+      analysis_history: {
+        Row: {
+          analyzed_text: string
+          created_at: string | null
+          id: string
+          result_summary: Json
+          tool_name: string
+          user_id: string
+          word_count: number
+        }
+        Insert: {
+          analyzed_text: string
+          created_at?: string | null
+          id?: string
+          result_summary: Json
+          tool_name: string
+          user_id: string
+          word_count: number
+        }
+        Update: {
+          analyzed_text?: string
+          created_at?: string | null
+          id?: string
+          result_summary?: Json
+          tool_name?: string
+          user_id?: string
+          word_count?: number
+        }
+        Relationships: []
+      }
+      daily_usage: {
+        Row: {
+          created_at: string | null
+          id: string
+          tool: string
+          updated_at: string | null
+          usage_date: string
+          user_id: string
+          words_used: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          tool: string
+          updated_at?: string | null
+          usage_date?: string
+          user_id: string
+          words_used?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          tool?: string
+          updated_at?: string | null
+          usage_date?: string
+          user_id?: string
+          words_used?: number
         }
         Relationships: []
       }
@@ -80,6 +165,30 @@ export type Database = {
           id?: number
           name?: string | null
           premium_users?: number | null
+        }
+        Relationships: []
+      }
+      usage_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          tool_name: string
+          user_id: string
+          word_count: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          tool_name: string
+          user_id: string
+          word_count: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          tool_name?: string
+          user_id?: string
+          word_count?: number
         }
         Relationships: []
       }
@@ -238,6 +347,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

@@ -54,11 +54,13 @@ function buildDefaultCredits(limit: number): Record<ToolType, number> {
 }
 
 export const useCreditManager = (isLoggedIn: boolean) => {
-  const dailyLimit = isLoggedIn ? DAILY_LIMIT_LOGGED_IN : DAILY_LIMIT_ANONYMOUS;
+  const defaultDailyLimit = isLoggedIn ? DAILY_LIMIT_LOGGED_IN : DAILY_LIMIT_ANONYMOUS;
 
   const [availableCredits, setAvailableCredits] = useState<Record<ToolType, number>>(
-    buildDefaultCredits(dailyLimit)
+    buildDefaultCredits(defaultDailyLimit)
   );
+  const [dailyLimit, setDailyLimit] = useState(defaultDailyLimit);
+  const [subscriptionPlan, setSubscriptionPlan] = useState('free');
   const [isLoading, setIsLoading] = useState(true);
   const fingerprintRef = useRef<string>('');
   const midnightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -123,6 +125,9 @@ export const useCreditManager = (isLoggedIn: boolean) => {
         return;
       }
 
+      if (data?.dailyLimit) setDailyLimit(data.dailyLimit);
+      if (data?.plan) setSubscriptionPlan(data.plan);
+
       if (data?.remaining) {
         setAvailableCredits(data.remaining as Record<ToolType, number>);
       }
@@ -184,7 +189,7 @@ export const useCreditManager = (isLoggedIn: boolean) => {
 
   // ─── Reset daily credits ───────────────────────────────────
   const resetDailyCredits = useCallback(() => {
-    const limit = isLoggedIn ? DAILY_LIMIT_LOGGED_IN : DAILY_LIMIT_ANONYMOUS;
+    const limit = isLoggedIn ? dailyLimit : DAILY_LIMIT_ANONYMOUS;
     const fresh = buildDefaultCredits(limit);
     setAvailableCredits(fresh);
 
@@ -192,7 +197,7 @@ export const useCreditManager = (isLoggedIn: boolean) => {
       saveLocalCredits(fresh);
     }
     // Server-side: no action needed — Supabase will return today's (empty) usage
-  }, [isLoggedIn]);
+  }, [isLoggedIn, dailyLimit]);
 
   // ─── Use credits ───────────────────────────────────────────
   const useCredits = useCallback((tool: ToolType, amount: number): boolean => {
@@ -202,10 +207,17 @@ export const useCreditManager = (isLoggedIn: boolean) => {
     }
 
     if (isLoggedIn) {
-      // Optimistic update — deduct locally, then confirm server-side
+      // Optimistic update — deduct locally from ALL tools so the pool is unified
       setAvailableCredits(prev => {
-        const updated = { ...prev, [tool]: Math.max(0, prev[tool] - amount) };
-        return updated;
+        const nextAmount = Math.max(0, Object.values(prev)[0] - amount);
+        return {
+          'ai-detector': nextAmount,
+          'grammar-checker': nextAmount,
+          'paraphrasing': nextAmount,
+          'summarization': nextAmount,
+          'ai-summary': nextAmount,
+          'translation': nextAmount,
+        } as Record<ToolType, number>;
       });
 
       // Fire server deduction (async, non-blocking for UX)
@@ -221,9 +233,21 @@ export const useCreditManager = (isLoggedIn: boolean) => {
             // Re-fetch all credits
             loadServerCredits();
           }
-        } else if (data?.remaining !== undefined) {
-          // Sync with server's authoritative remaining count
-          setAvailableCredits(prev => ({ ...prev, [tool]: data.remaining }));
+        } else {
+          if (data?.dailyLimit) setDailyLimit(data.dailyLimit);
+          if (data?.plan) setSubscriptionPlan(data.plan);
+          if (data?.remaining !== undefined) {
+            // Sync with server's authoritative remaining count across all tools
+            const unifiedRemaining = {
+              'ai-detector': data.remaining as number,
+              'grammar-checker': data.remaining as number,
+              'paraphrasing': data.remaining as number,
+              'summarization': data.remaining as number,
+              'ai-summary': data.remaining as number,
+              'translation': data.remaining as number,
+            };
+            setAvailableCredits(unifiedRemaining);
+          }
         }
       }).catch(err => {
         console.error('Credit deduction error:', err);
@@ -232,10 +256,19 @@ export const useCreditManager = (isLoggedIn: boolean) => {
 
       return true;
     } else {
-      // Anonymous: deduct locally
-      const updated = { ...availableCredits, [tool]: Math.max(0, availableCredits[tool] - amount) };
-      setAvailableCredits(updated);
-      saveLocalCredits(updated);
+      // Anonymous: deduct locally from ALL tools
+      const nextAmount = Math.max(0, availableCredits[tool] - amount);
+      const unifiedRemaining = {
+        'ai-detector': nextAmount,
+        'grammar-checker': nextAmount,
+        'paraphrasing': nextAmount,
+        'summarization': nextAmount,
+        'ai-summary': nextAmount,
+        'translation': nextAmount,
+      } as Record<ToolType, number>;
+
+      setAvailableCredits(unifiedRemaining);
+      saveLocalCredits(unifiedRemaining);
       return true;
     }
   }, [isLoggedIn, availableCredits]);
@@ -256,5 +289,6 @@ export const useCreditManager = (isLoggedIn: boolean) => {
     refreshCredits,
     isLoading,
     dailyLimit,
+    subscriptionPlan,
   };
 };

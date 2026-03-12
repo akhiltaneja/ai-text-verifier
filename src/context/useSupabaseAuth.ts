@@ -18,12 +18,12 @@ export const useSupabaseAuth = () => {
         });
         return false;
       }
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (error) {
         toast({
           title: "Login Failed",
@@ -32,7 +32,7 @@ export const useSupabaseAuth = () => {
         });
         return false;
       }
-      
+
       if (data.user) {
         toast({
           title: "Login Successful",
@@ -40,7 +40,7 @@ export const useSupabaseAuth = () => {
         });
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error("Unexpected login error:", error);
@@ -52,7 +52,7 @@ export const useSupabaseAuth = () => {
       return false;
     }
   };
-  
+
   const signup = async (email: string, name: string, password: string): Promise<boolean> => {
     try {
       if (!email || !name || !password) {
@@ -63,7 +63,7 @@ export const useSupabaseAuth = () => {
         });
         return false;
       }
-      
+
       if (password.length < 6) {
         toast({
           title: "Signup Failed",
@@ -72,7 +72,7 @@ export const useSupabaseAuth = () => {
         });
         return false;
       }
-      
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -80,7 +80,7 @@ export const useSupabaseAuth = () => {
           data: { name },
         },
       });
-      
+
       if (error) {
         toast({
           title: "Signup Failed",
@@ -89,7 +89,7 @@ export const useSupabaseAuth = () => {
         });
         return false;
       }
-      
+
       if (data.user) {
         toast({
           title: "Account Created",
@@ -97,7 +97,7 @@ export const useSupabaseAuth = () => {
         });
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error("Unexpected signup error:", error);
@@ -109,11 +109,11 @@ export const useSupabaseAuth = () => {
       return false;
     }
   };
-  
+
   const logout = async (): Promise<boolean> => {
     try {
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         toast({
           title: "Logout Failed",
@@ -122,12 +122,12 @@ export const useSupabaseAuth = () => {
         });
         return false;
       }
-      
+
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out",
       });
-      
+
       return true;
     } catch (error) {
       toast({
@@ -141,15 +141,16 @@ export const useSupabaseAuth = () => {
 
   const extractUserFromSession = (session: any): User | null => {
     if (!session?.user) return null;
-    
+
     const userData = session.user;
     const userName = userData.user_metadata?.name || userData.email?.split('@')[0] || 'User';
-    
+
     return {
       id: userData.id,
       email: userData.email || '',
       name: userName,
       provider: userData.app_metadata?.provider || 'email',
+      avatar_url: userData.user_metadata?.avatar_url,
     };
   };
 

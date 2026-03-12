@@ -12,7 +12,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { BackgroundBeams } from '@/components/ui/background-beams';
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileSidebar } from '@/components/profile/ProfileSidebar';
 import { ProfileContent } from '@/components/profile/ProfileContent';
 
@@ -60,10 +59,8 @@ const Profile = () => {
       <div className="relative min-h-screen">
         <div className="absolute inset-0 bg-gradient-to-b from-white to-blue-50 opacity-50"></div>
         <BackgroundBeams className="absolute inset-0 opacity-20" />
-        
+
         <div className="container max-w-6xl mx-auto py-10 px-4 relative z-10">
-          <ProfileHeader user={user} setUser={setUser} />
-          
           <div className="flex flex-col md:flex-row gap-6">
             <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
             <ProfileContent activeTab={activeTab} user={user} />

@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { TranslationToolComponent } from '@/components/translation/TranslationToolComponent';
 import { TranslationInfoCards } from '@/components/translation/TranslationInfoCards';
-import { CreditDisplay } from '@/components/CreditDisplay';
+import { TranslationHowToUse } from '@/components/translation/TranslationHowToUse';
 import { TranslationFAQ } from '@/components/translation/TranslationFAQ';
 import { EnhancedPricingSection } from '@/components/index/EnhancedPricingSection';
 
@@ -15,30 +15,25 @@ const TranslationTool = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">AI Translator Tool</h1>
-          <p className="text-muted-foreground mb-6">
-            Translate text between multiple languages with our advanced AI translation engine.
-          </p>
-          
-          <div className="mb-6">
-            <CreditDisplay tool="translation" />
+      <div className="bg-slate-50 min-h-[calc(100vh-4rem)] flex flex-col">
+        <div className="w-full h-full mx-auto px-2 sm:px-4 lg:px-6 py-4 flex flex-col flex-1 max-w-[1800px]">
+          <div className="text-center mb-6 mt-4">
+            <h1 className="text-3xl font-bold mb-2">AI Translator Tool</h1>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Translate text between multiple languages with our advanced AI translation engine.
+            </p>
           </div>
-          
-          <TranslationToolComponent />
+
+          <div className="flex-1 w-full flex items-center justify-center -mt-2">
+            <TranslationToolComponent />
+          </div>
         </div>
 
-        <div className="mt-16 max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-10">Translation Features</h2>
+        {/* UNIFIED SEO CONTENT */}
+        <div className="container mx-auto px-4 mt-16 space-y-16 pb-16 relative z-10">
           <TranslationInfoCards />
-        </div>
-
-        <div className="mt-16 max-w-6xl mx-auto">
+          <TranslationHowToUse />
           <TranslationFAQ />
-        </div>
-        
-        <div className="mt-16 max-w-6xl mx-auto">
           <EnhancedPricingSection />
         </div>
       </div>

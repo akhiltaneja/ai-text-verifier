@@ -11,7 +11,7 @@ interface CreditDisplayProps {
 }
 
 export const CreditDisplay: React.FC<CreditDisplayProps> = ({ tool }) => {
-  const { availableCredits, isLoggedIn, dailyLimit } = useCredits();
+  const { availableCredits, isLoggedIn, dailyLimit, isLoading } = useCredits();
 
   const maxCredits = dailyLimit;
   const percentage = Math.max(0, Math.min(100, (availableCredits[tool] / maxCredits) * 100));
@@ -22,12 +22,20 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({ tool }) => {
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium text-muted-foreground">Credits Available</span>
           <span className="text-sm font-semibold">
-            {availableCredits[tool]} / {maxCredits}
+            {isLoading ? (
+              <span className="h-4 w-16 bg-slate-200 animate-pulse rounded inline-block"></span>
+            ) : (
+              maxCredits >= 999999 ? 'Unlimited' : `${availableCredits[tool]} / ${maxCredits}`
+            )}
           </span>
         </div>
-        <Progress value={percentage} className="h-2" />
+        {isLoading ? (
+          <div className="h-2 w-full bg-slate-100 animate-pulse rounded mb-1"></div>
+        ) : (
+          <Progress value={maxCredits >= 999999 ? 100 : percentage} className="h-2" />
+        )}
         <p className="text-xs text-muted-foreground mt-1">
-          {maxCredits} credits per day (1 credit = 1 word)
+          {maxCredits >= 999999 ? 'Unlimited usage per day' : `${maxCredits} credits per day (1 credit = 1 word)`}
           {!isLoggedIn && ' • Sign up for 750/day'}
         </p>
       </div>

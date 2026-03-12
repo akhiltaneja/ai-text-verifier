@@ -3,15 +3,18 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { CreditCard, Package, ArrowRight, Check, Infinity, Zap } from 'lucide-react';
+import { Infinity, CreditCard, Package, ArrowRight, Check, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { PRICING_TIERS } from '@/components/index/EnhancedPricingSection';
+import { useCredits } from '@/context/CreditContext';
 
 export const SubscriptionDetails: React.FC = () => {
-  // Mocked subscription data - replace with actual data in production
+  const { subscriptionPlan } = useCredits();
+
+  // Mocked subscription renewal date - replace with logic if active subscriptions exist
   const subscriptionData = {
     status: 'active',
-    plan: 'free',
+    plan: subscriptionPlan || 'free',
     renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   };
@@ -23,10 +26,10 @@ export const SubscriptionDetails: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
@@ -45,8 +48,8 @@ export const SubscriptionDetails: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">
-                {subscriptionData.plan === 'free' ? 'Free Plan' : 'Premium Plan'}
+              <h3 className="font-semibold capitalize">
+                {subscriptionData.plan} Plan
               </h3>
               <p className="text-sm text-muted-foreground">
                 {subscriptionData.status === 'active' ? 'Active' : 'Inactive'}
@@ -56,11 +59,11 @@ export const SubscriptionDetails: React.FC = () => {
               {subscriptionData.status === 'active' ? 'Active' : 'Inactive'}
             </Badge>
           </div>
-          
+
           {subscriptionData.status === 'active' && (
             <div className="rounded-lg border p-4 bg-muted/20">
               <p className="text-sm mb-2">
-                {subscriptionData.plan === 'free' 
+                {subscriptionData.plan === 'free'
                   ? 'Your free plan renews automatically with limited credits.'
                   : 'Your subscription renews automatically on:'}
               </p>
@@ -81,7 +84,7 @@ export const SubscriptionDetails: React.FC = () => {
           </Button>
         </CardFooter>
       </Card>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
@@ -90,7 +93,7 @@ export const SubscriptionDetails: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-2xl font-bold">${premiumPlan?.price.monthly}<span className="text-muted-foreground text-sm font-normal"> / month</span></div>
-            
+
             <ul className="space-y-2">
               {premiumPlan?.features.slice(0, 3).map((feature, index) => (
                 <li key={index} className="flex items-start">
@@ -109,7 +112,7 @@ export const SubscriptionDetails: React.FC = () => {
             </Button>
           </CardFooter>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Unlimited Plan</CardTitle>
@@ -117,7 +120,7 @@ export const SubscriptionDetails: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-2xl font-bold">${unlimitedPlan?.price.monthly}<span className="text-muted-foreground text-sm font-normal"> / month</span></div>
-            
+
             <ul className="space-y-2">
               <li className="flex items-start">
                 <Infinity className="h-5 w-5 text-primary mr-2 mt-0.5" />

@@ -1,9 +1,9 @@
-
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 // Eagerly load the index page for fast initial render
 import Index from './pages/Index';
+import DeveloperAPI from './pages/DeveloperAPI'; // Added import for DeveloperAPI
 
 // Lazy load all other routes
 const AIDetector = lazy(() => import('./pages/AIDetector'));
@@ -46,6 +46,8 @@ function App() {
           <Route path="/paraphrasing" element={<ParaphrasingTool />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/developer-api" element={<DeveloperAPI />} /> {/* Added DeveloperAPI route */}
+          <Route path="/api" element={<Navigate to="/developer-api" />} /> {/* Added redirect for /api */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/blog" element={<Blog />} />

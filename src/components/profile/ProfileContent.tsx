@@ -4,7 +4,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import { ProfileForm } from './ProfileForm';
 import { UsageStatsSection } from './UsageStatsSection';
 import { SubscriptionDetails } from './SubscriptionDetails';
-import { AccountSettings } from './AccountSettings';
+import { AnalysisHistory } from './AnalysisHistory';
 import { User } from '@/context/types';
 
 interface ProfileContentProps {
@@ -19,28 +19,28 @@ export const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, user 
         {activeTab === 'profile' && (
           <div className="mt-0 focus-visible:outline-none focus-visible:ring-0">
             <h3 className="text-lg font-medium mb-4">Personal Information</h3>
-            <ProfileForm user={user} onUpdateAvatar={() => {}} />
+            <ProfileForm user={user} onUpdateAvatar={() => { }} />
           </div>
         )}
-        
+
         {activeTab === 'usage' && (
           <div className="mt-0 focus-visible:outline-none focus-visible:ring-0">
             <h3 className="text-lg font-medium mb-4">Usage Statistics</h3>
             <UsageStatsSection userId={user?.id} />
           </div>
         )}
-        
+
+        {activeTab === 'history' && (
+          <div className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+            <h3 className="text-lg font-medium mb-4">Analysis History</h3>
+            <AnalysisHistory userId={user?.id} />
+          </div>
+        )}
+
         {activeTab === 'subscription' && (
           <div className="mt-0 focus-visible:outline-none focus-visible:ring-0">
             <h3 className="text-lg font-medium mb-4">Subscription Details</h3>
             <SubscriptionDetails />
-          </div>
-        )}
-        
-        {activeTab === 'settings' && (
-          <div className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-            <h3 className="text-lg font-medium mb-4">Account Settings</h3>
-            <AccountSettings />
           </div>
         )}
       </div>

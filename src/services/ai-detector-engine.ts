@@ -385,12 +385,12 @@ function analyzeBurstiness(sentences: string[]): number {
 
     let score = 0;
 
-    // Low burstiness (low CV) = AI
-    if (cv < 0.25) score += 50;
-    else if (cv < 0.35) score += 40;
-    else if (cv < 0.45) score += 30;
-    else if (cv < 0.55) score += 15;
-    else if (cv < 0.65) score += 5;
+    // Low burstiness (low CV) = AI (Tightened for better accuracy on LLMs)
+    if (cv < 0.20) score += 50;
+    else if (cv < 0.25) score += 40;
+    else if (cv < 0.35) score += 30;
+    else if (cv < 0.45) score += 15;
+    else if (cv < 0.55) score += 5;
 
     // Check for uniformity in sentence-to-sentence complexity changes
     const diffs: number[] = [];
@@ -738,16 +738,46 @@ export function detectAIContent(text: string): EngineResult {
 
     // Add an adjustment for list-heavy text (if vocabulary and structure look like AI but burstiness failed because of lists)
     let finalScore = overallScore;
-    if (structureScore > 70 && vocabularyScore > 60) {
-        finalScore = Math.min(100, finalScore + 15);
-    }
-    // Also catch highly standard AI formats (if 4/6 tools agree strongly)
+
+    // MATHEMATICAL AMPLIFICATION TUNING
+    // If a single metric screams "This is definitely AI", we do not want a linear average
+    // to dilute it down to 60%. We take the maximum of the strongest indicators.
+    const maxIndicator = Math.max(entropyScore, structureScore, formulaicScore, burstyScore);
+
     const strongHits = Object.values({
         entropyScore, vocabularyScore, structureScore, burstyScore, formulaicScore, readabilityScore
-    }).filter(s => s > 65).length;
+    }).filter(s => s > 75).length;
 
-    if (strongHits >= 4) {
-        finalScore = Math.max(85, finalScore);
+    const moderateHits = Object.values({
+        entropyScore, vocabularyScore, structureScore, burstyScore, formulaicScore, readabilityScore
+    }).filter(s => s > 50).length;
+
+    // Extremely aggressive snapping for high certainty
+    if (maxIndicator >= 95) {
+        // If word choice is explicitly predictable or structure is entirely uniform
+        finalScore = Math.min(100, Math.max(99, maxIndicator));
+    } else if (maxIndicator >= 85) {
+        finalScore = Math.min(100, Math.max(95, maxIndicator + 5));
+    } else if (strongHits >= 4) {
+        // Almost certain AI (e.g. standard ChatGPT output)
+        finalScore = Math.min(100, Math.max(95, finalScore + 25));
+    } else if (strongHits >= 2 && moderateHits >= 3) {
+        // Highly likely AI
+        finalScore = Math.min(100, Math.max(85, finalScore + 15));
+    } else if (strongHits >= 1 && moderateHits >= 4) {
+        finalScore = Math.min(100, Math.max(65, finalScore + 15));
+    }
+
+    // Check for standard ChatGPT structural signatures
+    // e.g. "Title" -> Intro -> "First," "Second," -> "In Conclusion"
+    const lowerText = text.toLowerCase();
+    const hasChatGPTStructure =
+        (lowerText.includes('in conclusion') || lowerText.includes('to summarize') || lowerText.includes('ultimately')) &&
+        (lowerText.includes('firstly') || lowerText.includes('first,') || lowerText.includes('one of the primary')) &&
+        sentences.length > 5;
+
+    if (hasChatGPTStructure) {
+        finalScore = Math.min(100, finalScore + 20);
     }
 
     // Generate sentence-level analysis

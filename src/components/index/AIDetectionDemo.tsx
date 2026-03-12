@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, CheckCircle2, BrainCircuit } from 'lucide-react';
 import { AIDetectionSample } from '@/types/ai-detector';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { Particles } from '@/components/ui/particles';
@@ -79,8 +79,8 @@ export const AIDetectionDemo: React.FC = () => {
             <button
               onClick={() => setActiveTab('ai')}
               className={`flex-1 py-4 px-4 text-center font-medium text-sm transition-all duration-300 ${activeTab === 'ai'
-                  ? 'bg-white text-primary border-b-2 border-primary'
-                  : 'bg-slate-50/50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                ? 'bg-white text-primary border-b-2 border-primary'
+                : 'bg-slate-50/50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
                 }`}
             >
               Analyze AI-Generated Example
@@ -88,8 +88,8 @@ export const AIDetectionDemo: React.FC = () => {
             <button
               onClick={() => setActiveTab('human')}
               className={`flex-1 py-4 px-4 text-center font-medium text-sm transition-all duration-300 ${activeTab === 'human'
-                  ? 'bg-white text-emerald-600 border-b-2 border-emerald-500'
-                  : 'bg-slate-50/50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+                ? 'bg-white text-emerald-600 border-b-2 border-emerald-500'
+                : 'bg-slate-50/50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
                 }`}
             >
               Analyze Human-Written Example
@@ -99,6 +99,10 @@ export const AIDetectionDemo: React.FC = () => {
           <div className="flex flex-col md:flex-row min-h-[500px]">
             {/* Left Pane (Editor replica) */}
             <div className="w-full md:w-3/5 bg-white p-6 md:p-8 flex flex-col border-r border-slate-100">
+              <div className="flex items-center gap-2 text-primary font-semibold mb-6">
+                <BrainCircuit className="w-5 h-5" />
+                NexusCore Engine
+              </div>
               <div className="flex justify-between items-center mb-6">
                 <span className="text-sm font-medium text-slate-400">Document Text</span>
                 <span className="text-sm font-medium text-slate-400">{activeSample.text.split(' ').length} words</span>
@@ -109,8 +113,8 @@ export const AIDetectionDemo: React.FC = () => {
                   <span
                     key={index}
                     className={`transition-all duration-300 ${highlight.isAI
-                        ? 'bg-rose-100 text-rose-900 border-b-2 border-rose-300 rounded-sm'
-                        : 'text-slate-700'
+                      ? 'bg-rose-100 text-rose-900 border-b-2 border-rose-300 rounded-sm'
+                      : 'text-slate-700'
                       }`}
                   >
                     {highlight.text}{' '}

@@ -21,10 +21,10 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium mb-8 shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 border border-slate-200 shadow-sm backdrop-blur-md mb-8"
           >
-            <Sparkles className="w-4 h-4 text-primary mr-2" />
-            Voted #1 Enterprise AI Detection Engine
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="text-sm font-medium text-slate-700">Powered by NexusCore AI v2.0</span>
           </motion.div>
 
           <motion.h1
